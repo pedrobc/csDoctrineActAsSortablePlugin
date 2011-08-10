@@ -45,7 +45,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
     //BC: accept single sortable definitions
     if(count($options) == 0)
     {
-      $this->_options[0] = $this->_defaultOptions;
+      $this->_options['position'] = $this->_defaultOptions;
     }
     else
     {
@@ -54,7 +54,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
       {
         if(in_array($key, array_keys($this->_defaultOptions))) //is normal (old) style
         {
-          $this->_options[0] = Doctrine_Lib::arrayDeepMerge($this->_defaultOptions, $options);
+          $this->_options['position'] = Doctrine_Lib::arrayDeepMerge($this->_defaultOptions, $options);
           $isOldMode = true;
           break;
         }
@@ -138,7 +138,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
   *
   * @return string
   */
-  protected function getSortableIndexName($index = 0)
+  protected function getSortableIndexName($index = 'position')
   {
     return sprintf('%s_%s_%s', $this->getTable()->getTableName(), $this->_options[$index]['name'], $this->_options[$index]['indexName']);
   }
@@ -149,14 +149,14 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    *
    * @return void
    */
-  public function demote($index = 0)
+  public function demote($index = 'position')
   {
     $object = $this->getInvoker();
     $position = $object->get($this->_options[$index]['name']);
 
     if ($position < $object->getFinalPosition($index))
     {
-      $object->moveToPosition($index, $position + 1);
+      $object->moveToPosition($position + 1, $index);
     }
   }
 
@@ -166,14 +166,14 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    *
    * @return void
    */
-  public function promote($index = 0)
+  public function promote($index = 'position')
   {
     $object = $this->getInvoker();
     $position = $object->get($this->_options[$index]['name']);
 
     if ($position > 1)
     {
-      $object->moveToPosition($index, $position - 1);
+      $object->moveToPosition($position - 1, $index);
     }
   }
 
@@ -182,10 +182,10 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    *
    * @return void
    */
-  public function moveToFirst($index = 0)
+  public function moveToFirst($index = 'position')
   {
     $object = $this->getInvoker();
-    $object->moveToPosition($index, 1);
+    $object->moveToPosition(1, $index);
   }
 
 
@@ -194,10 +194,10 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    *
    * @return void
    */
-  public function moveToLast($index = 0)
+  public function moveToLast($index = 'position')
   {
     $object = $this->getInvoker();
-    $object->moveToPosition($index, $object->getFinalPosition($index));
+    $object->moveToPosition($object->getFinalPosition($index), $index);
   }
 
 
@@ -207,7 +207,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    * @param int $newPosition
    * @return void
    */
-  public function moveToPosition($newPosition, $index = 0)
+  public function moveToPosition($newPosition, $index = 'position')
   {
     if(null == $index)
     {
@@ -305,7 +305,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    * @return void
    * @author Travis Black
    */
-  public function sortTableProxy($order, $index = 0)
+  public function sortTableProxy($order, $index = 'position')
   {
     /*
       TODO
@@ -339,7 +339,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    * @param string $order
    * @return $query
    */
-  public function findAllSortedTableProxy($order = 'ASC', $index = 0)
+  public function findAllSortedTableProxy($order = 'ASC', $index = 'position')
   {
     $order = $this->formatAndCheckOrder($order);
     $object = $this->getInvoker();
@@ -360,7 +360,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    * @param string $order
    * @return $query
    */
-  public function findAllSortedWithParentTableProxy($parentValue, $parentColumnName = null, $order = 'ASC', $index = 0)
+  public function findAllSortedWithParentTableProxy($parentValue, $parentColumnName = null, $order = 'ASC', $index = 'position')
   {
     $order = $this->formatAndCheckOrder($order);
 
@@ -416,7 +416,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
     }
     else
     {
-      throw new Doctrine_Exception('Order parameter value must be "asc" or "desc"');
+      throw new Doctrine_Exception('Order parameter value must be "ASC" or "DESC"');
     }
 
     return $order;
@@ -428,13 +428,13 @@ class Doctrine_Template_Sortable extends Doctrine_Template
    *
    * @return int $position
    */
-  public function getFinalPosition($index = 0)
+  public function getFinalPosition($index = 'position')
   {
     $object = $this->getInvoker();
 
     $q = $object->getTable()->createQuery()
                             ->select($this->_options[$index]['name'])
-                            ->orderBy($this->_options[$index]['name'] . ' desc');
+                            ->orderBy($this->_options[$index]['name'] . ' DESC');
 
    foreach($this->_options[$index]['uniqueBy'] as $field)
    {
@@ -454,7 +454,6 @@ class Doctrine_Template_Sortable extends Doctrine_Template
 
    return (int)$finalPosition;
   }
-
   // sqlite/pgsql doesn't supports UPDATE with ORDER BY
   protected function canUpdateWithOrderBy(Doctrine_Connection $conn)
   {
