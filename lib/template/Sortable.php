@@ -67,7 +67,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
           {
             $_options['name'] = 'position_' . $index;
           }
-          $this->_options[$index] = Doctrine_Lib::arrayDeepMerge($this->_defaultOptions, $_options);
+          $this->_options['position_'.$index] = Doctrine_Lib::arrayDeepMerge($this->_defaultOptions, $_options);
         }
       }
     }
