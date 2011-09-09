@@ -44,7 +44,7 @@ class Doctrine_Template_Listener_Sortable extends Doctrine_Record_Listener
   {
     $fieldName = $this->_options['name'];
     $object = $event->getInvoker();
-    $object->$fieldName = $object->getFinalPosition()+1;
+    $object->$fieldName = $object->getFinalPosition($fieldName)+1;
   }
 
   /**
